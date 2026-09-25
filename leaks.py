@@ -518,9 +518,8 @@ def build():
 def render(data):
     tpl = TEMPLATE.read_text(encoding="utf-8")
     js = json.dumps(data, ensure_ascii=False).replace("</", "<\\/") if data else "null"
-    # 雲端版（GitHub Actions）會設定 LEAKS_RUN_URL，讓「立即更新」連到手動執行頁
-    cfg = json.dumps({"staleHours": STALE_HOURS, "sources": dict(SOURCES),
-                      "runUrl": os.environ.get("LEAKS_RUN_URL", "")}, ensure_ascii=False)
+    # 雲端版每小時自動更新，網頁上的「立即更新」改成檢查有沒有更新過的版本
+    cfg = json.dumps({"staleHours": STALE_HOURS, "sources": dict(SOURCES), "cloud": CLOUD}, ensure_ascii=False)
     return tpl.replace("/*__DATA__*/null", js).replace("/*__CFG__*/{}", cfg)
 
 

@@ -2,7 +2,7 @@ name: 更新原神內鬼情報站
 
 on:
   schedule:
-    - cron: "15 */3 * * *"   # 每 3 小時（GitHub 排程可能延遲數分鐘）
+    - cron: "15 * * * *"     # 每小時一次（GitHub 排程常延遲 5–20 分鐘）
   workflow_dispatch:          # 可在 GitHub 網頁上手動按「Run workflow」
   push:
     branches: [main]
@@ -31,8 +31,6 @@ jobs:
           python-version: "3.12"
 
       - name: 抓消息、翻譯、產生網頁
-        env:
-          LEAKS_RUN_URL: https://github.com/${{ github.repository }}/actions/workflows/update.yml
         run: |
           python leaks.py build
           mkdir -p site

@@ -427,7 +427,7 @@ function drawSide() {
 function drawMeta() {
   const meta = document.getElementById("meta");
   if (!DATA) { meta.textContent = "尚未更新"; return; }
-  meta.textContent = `近 ${DATA.days} 天 · 最後更新 ${fmt(DATA.generated)}（${ago(DATA.generated)}）`;
+  meta.textContent = `近 ${DATA.days} 天 · ${LIVE ? "" : "每小時自動更新 · "}最後更新 ${fmt(DATA.generated)}（${ago(DATA.generated)}）`;
   const bad = DATA.sources.filter(s => s.error);
   document.getElementById("foot").replaceChildren(
     el("div", {}, `這次更新：${DATA.sources.length - bad.length}/${DATA.sources.length} 個來源正常。某個來源暫時抓不到時，會保留它先前的消息。英文用 Google 翻譯免費服務轉成中文，不消耗 AI token。`),
@@ -461,9 +461,20 @@ document.addEventListener("keydown", e => {
 async function refresh() {
   const btn = document.getElementById("refresh");
   const notice = document.getElementById("notice");
-  if (!LIVE && CFG.runUrl) {
-    window.open(CFG.runUrl, "_blank", "noopener");
-    notice.textContent = "已開啟 GitHub：請按右側「Run workflow」→ 綠色「Run workflow」，約 1–2 分鐘後重新整理本頁即可看到新資料。";
+  if (!LIVE && CFG.cloud) {
+    // 雲端版是靜態網頁，由 GitHub 每小時自動抓一次；這裡檢查有沒有比畫面上更新的版本，有就載入
+    btn.disabled = true; btn.textContent = "檢查中…";
+    try {
+      const page = await (await fetch(location.pathname + "?t=" + Date.now(), { cache: "no-store" })).text();
+      const m = page.match(/"generated":\s*"([^"]+)"/);
+      if (m && DATA && new Date(m[1]) > new Date(DATA.generated)) { location.reload(); return; }
+      const next = DATA ? new Date(new Date(DATA.generated).getTime() + 3600000) : null;
+      notice.textContent = "目前已經是最新資料" + (DATA ? `（${ago(DATA.generated)}更新）` : "") +
+        "。網站每小時自動更新一次" + (next ? `，下一次大約在 ${next.toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" })} 之後` : "") + "。";
+    } catch (e) {
+      notice.textContent = "檢查失敗，請確認網路連線後再試一次。";
+    }
+    btn.disabled = false; btn.textContent = "↻ 立即更新";
     return;
   }
   if (!LIVE) { notice.textContent = "這是離線檔案，無法更新。請用桌面上的「原神內鬼情報站」捷徑開啟。"; return; }
