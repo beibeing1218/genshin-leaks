@@ -170,9 +170,44 @@ footer td { padding: 2px 14px 2px 0; }
 .lb .bar button, .lb .bar a { background: rgba(20, 24, 44, .9); font-size: 14px; padding: 6px 14px; border: 1px solid var(--line); border-radius: 10px; text-decoration: none; }
 .lb .cnt { color: var(--muted); font-size: 13px; align-self: center; }
 
+/* 底部彈出面板（手機、平板用）：版本、爆料者排行、更多來源 */
+#f-quick { display: none; }
+.sheet-bg { position: fixed; inset: 0; z-index: 40; background: rgba(5, 6, 14, .62); opacity: 0; pointer-events: none; transition: opacity .2s; }
+.sheet-bg.on { opacity: 1; pointer-events: auto; }
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 41; max-width: 680px; margin: 0 auto; max-height: 78vh; overflow: auto;
+  overscroll-behavior: contain; background: #232849; border: 1px solid var(--bar-line); border-bottom: 0; border-radius: 18px 18px 0 0;
+  padding: 0 16px calc(20px + env(safe-area-inset-bottom)); box-shadow: 0 -20px 60px rgba(0, 0, 0, .7);
+  transform: translateY(105%); visibility: hidden; transition: transform .25s ease, visibility 0s .25s; }
+.sheet.on { transform: none; visibility: visible; transition: transform .25s ease; }
+.sheet-head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 0 10px; background: #232849; }
+.sheet-head::before { content: ""; position: absolute; left: 50%; top: 7px; width: 40px; height: 4px; margin-left: -20px; border-radius: 2px; background: rgba(255, 255, 255, .22); }
+.sheet-head h3 { margin: 0; font: 700 18px/1.4 var(--serif); color: var(--gold-hi); letter-spacing: .04em; }
+.sheet-head button { font-size: 15px; padding: 4px 12px; }
+.sheet h4 { margin: 16px 0 6px; font: 700 15.5px/1.4 var(--serif); color: var(--gold); }
+.sheet .hint { margin: 0 0 8px; font-size: 13.5px; color: var(--muted); }
+.sheet-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 0 8px; }
+.sheet-chips .chip { font-size: 15.5px; padding: 6px 16px; }
+.sheet .clear { width: 100%; margin: 2px 0 10px; padding: 8px; font-size: 15px; color: var(--gold-hi); border-color: var(--bar-line); }
+.sheet .rank li { font-size: 16px; padding: 7px 0; border-top: 1px solid rgba(255, 255, 255, .06); }
+.sheet .rank li:first-child { border-top: 0; }
+.sheet .rank li.on button { color: var(--gold-hi); font-weight: 600; }
+.sheet .rank .n, .sheet .rank a { font-size: 14px; }
+.sheet .rank a { padding: 2px 6px; }
+.sheet .threads li, .sheet .manual li { font-size: 15.5px; }
+.sheet .threads small, .sheet .manual small { font-size: 13.5px; }
+
 @media (max-width: 960px) {
   .layout { grid-template-columns: minmax(0, 1fr); }
-  aside { position: static; max-height: none; order: 2; }
+  /* 側欄內容改從篩選列的「爆料者排行」「更多來源」打開，不再排在整頁最下面 */
+  aside { display: none; }
+  #f-ver, #f-opt { display: none; }
+  #f-quick { display: flex; }
+}
+@media (max-width: 600px) {
+  /* 第二行四顆按鈕剛好塞滿一行，拿掉標籤與右側淡出 */
+  #f-quick .lbl { display: none; }
+  #f-quick { padding-right: 0; -webkit-mask-image: none; mask-image: none; }
 }
 @media (max-width: 600px) {
   /* 手機：導覽列跟著捲走，篩選列固定在畫面最下方 */
@@ -239,6 +274,7 @@ footer td { padding: 2px 14px 2px 0; }
         <div class="row" id="f-source"><span class="lbl">來源</span></div>
         <div class="row" id="f-ver"><span class="lbl">版本</span></div>
         <div class="row" id="f-opt"><span class="lbl">篩選</span></div>
+        <div class="row" id="f-quick"><span class="lbl">篩選</span></div>
       </div>
       <div class="stats" id="stats"></div>
       <div id="list"></div>
@@ -262,6 +298,11 @@ footer td { padding: 2px 14px 2px 0; }
   </div>
   <footer id="foot"></footer>
 </main>
+<div class="sheet-bg" id="sheet-bg"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="sheet-head"><h3 id="sheet-title"></h3><button id="sheet-close">關閉</button></div>
+  <div id="sheet-body"></div>
+</div>
 <div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="圖片">
   <img id="lb-img" alt="">
   <div class="bar"><button id="lb-prev">‹ 上一張</button><span class="cnt" id="lb-cnt"></span><button id="lb-next">下一張 ›</button><a id="lb-open" target="_blank" rel="noopener noreferrer">原圖 ↗</a><button id="lb-close">關閉</button></div>
@@ -310,15 +351,18 @@ function chips(id, opts, cur, pick) {
     row.append(el("button", { class: "chip" + (cur === v ? " on" : ""), onclick: () => pick(v) }, dot, label, n != null ? el("small", {}, n) : null));
   }
 }
+function versionOpts() {
+  const vc = {};
+  (DATA ? DATA.items : []).forEach(i => i.versions.forEach(v => vc[v] = (vc[v] || 0) + 1));
+  const vers = Object.keys(vc).filter(v => vc[v] >= 2).sort((a, b) => parseFloat(b) - parseFloat(a)).slice(0, 8);
+  return [["all", "全部版本"], ...vers.map(v => [v, v + " 版", null, vc[v]])];
+}
 function drawControls() {
   const items = DATA ? DATA.items : [];
   const count = s => items.filter(i => i.source === s).length;
   chips("f-source", [["all", "全部", null, items.length], ...Object.entries(SRC).map(([k, v]) => [k, v, `var(--s-${k})`, count(k)])],
     state.source, v => { state.source = v; save("source", v); reset(); });
-  const vc = {};
-  items.forEach(i => i.versions.forEach(v => vc[v] = (vc[v] || 0) + 1));
-  const vers = Object.keys(vc).filter(v => vc[v] >= 2).sort((a, b) => parseFloat(b) - parseFloat(a)).slice(0, 8);
-  chips("f-ver", [["all", "全部版本"], ...vers.map(v => [v, v + " 版", null, vc[v]])], state.ver, v => { state.ver = v; reset(); });
+  chips("f-ver", versionOpts(), state.ver, v => { state.ver = v; reset(); });
   const opt = [["img", state.imgOnly ? "✓ 只看有圖" : "只看有圖"]];
   if (state.leaker) opt.push(["leaker", `爆料者：${state.leaker} ✕`]);
   chips("f-opt", opt, state.imgOnly ? "img" : "", v => {
@@ -326,6 +370,15 @@ function drawControls() {
     reset();
   });
   if (state.leaker) document.querySelector("#f-opt button:last-child").classList.add("on");
+  // 手機、平板：版本、爆料者排行、更多來源收進彈出面板，篩選列只要兩行
+  const quick = document.getElementById("f-quick");
+  quick.querySelectorAll("button").forEach(b => b.remove());
+  quick.append(
+    el("button", { class: "chip" + (state.ver !== "all" ? " on" : ""), onclick: openVersions }, state.ver === "all" ? "版本 ▴" : `${state.ver} 版 ▴`),
+    el("button", { class: "chip" + (state.imgOnly ? " on" : ""), onclick: () => { state.imgOnly = !state.imgOnly; save("img", state.imgOnly ? "1" : "0"); reset(); } },
+      state.imgOnly ? "✓ 有圖" : "只看有圖"),
+    el("button", { class: "chip" + (state.leaker ? " on" : ""), onclick: openLeakers }, state.leaker ? `${state.leaker} ▴` : "爆料者 ▴"),
+    el("button", { class: "chip", onclick: openMore }, "更多 ▴"));
   document.querySelectorAll("#lang button").forEach(b => b.classList.toggle("on", b.dataset.v === state.lang));
 }
 function reset() {
@@ -412,17 +465,53 @@ function draw() {
   }
 }
 
+// 側欄（電腦）與彈出面板（手機）共用同一份內容
+const rankItems = pick => DATA.leakers.length ? DATA.leakers.map(l => el("li", { class: state.leaker === l.name ? "on" : "" },
+  el("button", { onclick: () => pick(l.name) }, l.name), el("span", { class: "n" }, `${l.count} 則`), ext(l.url, "↗"))) : [el("li", {}, "目前沒有資料")];
+const threadItems = () => DATA.threads.slice(0, 8).map(t => el("li", {},
+  ext(t.link, t.title), el("small", {}, `推 ${t.gp} · 人氣 ${t.views.toLocaleString()}` + (t.last ? ` · 最新回覆 ${ago(t.last)}` : ""))));
+const manualItems = () => DATA.manual.map(m => el("li", {}, ext(m.url, m.name + " ↗"), el("small", {}, m.desc)));
 function drawSide() {
   if (!DATA) return;
-  const rank = document.getElementById("rank");
-  rank.replaceChildren(...DATA.leakers.map(l => el("li", {},
-    el("button", { onclick: () => { state.leaker = l.name; reset(); scrollTo({ top: 0 }); } }, l.name),
-    el("span", { class: "n" }, `${l.count} 則`), ext(l.url, "↗"))));
-  if (!DATA.leakers.length) rank.append(el("li", {}, "目前沒有資料"));
-  document.getElementById("threads").replaceChildren(...DATA.threads.slice(0, 8).map(t => el("li", {},
-    ext(t.link, t.title), el("small", {}, `推 ${t.gp} · 人氣 ${t.views.toLocaleString()}` + (t.last ? ` · 最新回覆 ${ago(t.last)}` : "")))));
-  document.getElementById("manual").replaceChildren(...DATA.manual.map(m => el("li", {}, ext(m.url, m.name + " ↗"), el("small", {}, m.desc))));
+  document.getElementById("rank").replaceChildren(...rankItems(n => { state.leaker = n; reset(); scrollTo({ top: 0 }); }));
+  document.getElementById("threads").replaceChildren(...threadItems());
+  document.getElementById("manual").replaceChildren(...manualItems());
 }
+
+/* 底部彈出面板 */
+function openSheet(title, ...content) {
+  document.getElementById("sheet-title").textContent = title;
+  document.getElementById("sheet-body").replaceChildren(...content.filter(Boolean));
+  const sheet = document.getElementById("sheet");
+  sheet.scrollTop = 0;
+  sheet.classList.add("on"); document.getElementById("sheet-bg").classList.add("on");
+  document.getElementById("sheet-close").focus();
+}
+function closeSheet() {
+  document.getElementById("sheet").classList.remove("on"); document.getElementById("sheet-bg").classList.remove("on");
+}
+const pickAndClose = fn => { fn(); closeSheet(); reset(); };
+function openVersions() {
+  openSheet("選擇版本", el("div", { class: "sheet-chips" }, ...versionOpts().map(([v, label, , n]) =>
+    el("button", { class: "chip" + (state.ver === v ? " on" : ""), onclick: () => pickAndClose(() => state.ver = v) }, label, n != null ? el("small", {}, n) : null))));
+}
+function openLeakers() {
+  if (!DATA) return;
+  openSheet("爆料者排行",
+    state.leaker ? el("button", { class: "clear", onclick: () => pickAndClose(() => state.leaker = "") }, `取消篩選（目前只看 ${state.leaker}）`) : null,
+    el("p", { class: "hint" }, "近幾天被引用最多的爆料者。點名字只看他的消息，↗ 開啟原帳號或搜尋。"),
+    el("ol", { class: "rank" }, ...rankItems(n => pickAndClose(() => state.leaker = n))));
+}
+function openMore() {
+  if (!DATA) return;
+  openSheet("更多來源",
+    el("h4", {}, "巴哈姆特內鬼消息串"), el("ul", { class: "threads" }, ...threadItems()),
+    el("h4", {}, "其他一手來源"), el("p", { class: "hint" }, "這些網站擋程式抓取，或需要登入，請直接點開看。"),
+    el("ul", { class: "manual" }, ...manualItems()));
+}
+document.getElementById("sheet-close").onclick = closeSheet;
+document.getElementById("sheet-bg").onclick = closeSheet;
+document.addEventListener("keydown", e => { if (e.key === "Escape" && document.getElementById("sheet").classList.contains("on")) closeSheet(); });
 
 function drawMeta() {
   const meta = document.getElementById("meta");
