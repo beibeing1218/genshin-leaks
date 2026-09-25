@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <meta name="referrer" content="no-referrer">
 <title>原神內鬼情報站</title>
@@ -171,12 +171,16 @@ footer td { padding: 2px 14px 2px 0; }
   aside { position: static; max-height: none; order: 2; }
 }
 @media (max-width: 600px) {
-  /* 手機：導覽列跟著捲走，只留篩選列固定在最上面，省空間 */
+  /* 手機：導覽列跟著捲走，篩選列固定在畫面最下方 */
   .navwrap { position: static; padding-top: 6px; }
   .brand span { display: none; }
   .hero { padding: 32px 0 16px; }
-  /* 手機：每列一行、可左右滑，固定在上方時才不會佔掉半個螢幕 */
-  .controls { gap: 6px; }
+  /* 手機：篩選列像 App 的底部選單一樣固定在最下面；每列一行、可左右滑，才不會佔掉半個螢幕 */
+  .controls { position: fixed; left: 0; right: 0; bottom: 0; top: auto; margin: 0; gap: 6px;
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0;
+    background: rgba(14, 17, 33, .96); border: 1px solid var(--line); border-bottom: 0;
+    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 -12px 30px -14px rgba(0, 0, 0, .9); }
+  main.wrap { padding-bottom: calc(var(--barh, 120px) + 8px); }
   .row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); padding-right: 24px; }
   .row::-webkit-scrollbar { display: none; }
   .lbl { width: auto; margin-right: 2px; }
@@ -311,19 +315,22 @@ function reset() {
   state.shown = PAGE; drawControls(); draw();
   // 在固定的篩選列上切換條件時，捲回清單開頭，才看得到新結果的第一則
   const bar = document.querySelector(".controls"), stats = document.getElementById("stats");
-  const barBottom = bar.getBoundingClientRect().bottom;
-  if (bar.classList.contains("stuck") && stats.getBoundingClientRect().top < barBottom)
-    scrollTo({ top: scrollY + stats.getBoundingClientRect().top - barBottom - 8 });
+  const line = docked() ? 0 : bar.getBoundingClientRect().bottom;   // 手機篩選列在下方，清單從畫面頂端開始
+  if ((docked() || bar.classList.contains("stuck")) && stats.getBoundingClientRect().top < line)
+    scrollTo({ top: scrollY + stats.getBoundingClientRect().top - line - 8 });
 }
+const docked = () => getComputedStyle(document.querySelector(".controls")).position === "fixed";
 
-// 篩選列固定在導覽列下方；固定住時加上毛玻璃底色
+// 電腦：篩選列固定在導覽列下方，固定住時加上毛玻璃底色；手機：固定在畫面最下方，內容底部留出同高的空間
 function layoutSticky() {
   const wrap = document.querySelector(".navwrap");
   const stick = getComputedStyle(wrap).position === "sticky" ? wrap.getBoundingClientRect().height + 6 : 0;
   document.documentElement.style.setProperty("--stick", Math.round(stick) + "px");
+  document.documentElement.style.setProperty("--barh", Math.round(document.querySelector(".controls").getBoundingClientRect().height) + "px");
 }
 function markStuck() {
   const bar = document.querySelector(".controls");
+  if (docked()) return bar.classList.remove("stuck");
   const top = parseFloat(getComputedStyle(bar).top);
   bar.classList.toggle("stuck", bar.getBoundingClientRect().top <= top + 0.5 && scrollY > 0);
 }
@@ -471,7 +478,7 @@ document.getElementById("refresh").onclick = refresh;
 document.querySelectorAll("#lang button").forEach(b => b.onclick = () => { state.lang = b.dataset.v; save("lang", state.lang); drawControls(); draw(); });
 let qt;
 document.getElementById("q").oninput = e => { clearTimeout(qt); qt = setTimeout(() => { state.q = e.target.value.trim(); state.shown = PAGE; draw(); }, 150); };
-drawControls(); drawMeta(); drawSide(); draw();
+drawControls(); drawMeta(); drawSide(); draw(); layoutSticky();
 if (LIVE && (!DATA || Date.now() - new Date(DATA.generated) > CFG.staleHours * 3600000)) refresh();
 </script>
 </body>
