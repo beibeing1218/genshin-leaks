@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="referrer" content="no-referrer">
+<title>原神內鬼情報站</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* 提瓦特夜空：深藍底、金色描邊、星光 */
+:root {
+  --bg: #0b0e1a; --bg2: #121629; --ink: #eef0f7; --muted: #9aa0b8; --dim: #646a85;
+  --line: rgba(232, 201, 138, .12); --line-strong: rgba(232, 201, 138, .32);
+  --card: rgba(24, 28, 50, .72); --glass: rgba(16, 19, 36, .78);
+  --gold: #e8c98a; --gold-hi: #f6e3b4; --gold-soft: rgba(232, 201, 138, .12);
+  /* 各來源識別色 */
+  --s-baha: #4cc3ff; --s-reddit: #ff7a45; --s-hoyolab: #e8c98a; --s-media: #b79cff;
+  --serif: "Noto Serif TC", "Microsoft JhengHei", serif;
+  --sans: "Inter", "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { margin: 0; color: var(--ink); font: 15px/1.7 var(--sans); -webkit-font-smoothing: antialiased; overflow-x: hidden; min-height: 100vh; }
+a { color: inherit; }
+::selection { background: rgba(232, 201, 138, .35); }
+.sky { position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(900px 500px at 80% -10%, rgba(92, 110, 220, .22), transparent 70%),
+    radial-gradient(700px 420px at 5% 0%, rgba(232, 201, 138, .10), transparent 70%),
+    linear-gradient(180deg, #11163a 0, var(--bg) 700px); }
+.sky::before { content: ""; position: absolute; inset: 0; opacity: .55;
+  background-image:
+    radial-gradient(1.2px 1.2px at 12% 18%, #fff, transparent), radial-gradient(1px 1px at 28% 8%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 47% 22%, #fff, transparent), radial-gradient(1px 1px at 66% 12%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 83% 28%, #fff, transparent), radial-gradient(1px 1px at 92% 6%, #fff, transparent),
+    radial-gradient(1px 1px at 5% 40%, #fff, transparent), radial-gradient(1.3px 1.3px at 38% 36%, #fff, transparent),
+    radial-gradient(1px 1px at 74% 44%, #fff, transparent), radial-gradient(1px 1px at 58% 52%, #fff, transparent);
+  -webkit-mask-image: linear-gradient(#000, transparent 620px); mask-image: linear-gradient(#000, transparent 620px); }
+
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+.nav { position: sticky; top: 10px; z-index: 20; margin-top: 10px; display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px 8px 14px; background: var(--glass); border: 1px solid var(--line); border-radius: 14px;
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 12px 40px -16px rgba(0, 0, 0, .8); }
+.brand { display: flex; align-items: center; gap: 10px; font: 700 16px/1 var(--serif); color: var(--gold-hi); letter-spacing: .04em; }
+.star { width: 28px; height: 28px; flex-shrink: 0; }
+.spacer { flex: 1; }
+button { font: inherit; cursor: pointer; color: var(--ink); background: transparent; border: 1px solid var(--line);
+  border-radius: 10px; padding: 5px 12px; transition: .15s; }
+button:hover { border-color: var(--line-strong); background: rgba(232, 201, 138, .06); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+button.primary { background: linear-gradient(180deg, #f3dca6, #d9b36c); color: #2a1f08; border-color: #f0d69d; font-weight: 600; }
+button.primary:hover { background: linear-gradient(180deg, #f8e6bb, #e2bf7c); }
+button:disabled { opacity: .55; cursor: progress; }
+.seg { display: inline-flex; padding: 2px; gap: 2px; border: 1px solid var(--line); border-radius: 10px; }
+.seg button { border: 0; border-radius: 8px; padding: 3px 10px; font-size: 13px; color: var(--muted); }
+.seg button.on { background: var(--gold-soft); color: var(--gold-hi); }
+
+.hero { text-align: center; padding: 48px 0 22px; }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--gold); letter-spacing: .12em;
+  padding: 3px 14px; border: 1px solid var(--line-strong); border-radius: 999px; background: rgba(232, 201, 138, .06); }
+.eyebrow i { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 10px var(--gold); }
+h1 { margin: 16px 0 6px; font: 700 clamp(32px, 6vw, 52px)/1.15 var(--serif); letter-spacing: .06em;
+  background: linear-gradient(180deg, #fff6df 20%, #d8b776); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.meta { color: var(--muted); font-size: 13px; }
+.warn { color: var(--dim); font-size: 12.5px; margin-top: 4px; }
+
+.search { position: relative; max-width: 640px; margin: 6px auto 0; }
+.search svg { position: absolute; left: 15px; top: 50%; translate: 0 -50%; color: var(--dim); }
+input[type=search] { font: 16px var(--sans); width: 100%; padding: 12px 16px 12px 44px; border-radius: 12px; color: var(--ink);
+  background: var(--glass); border: 1px solid var(--line); }
+input[type=search]::placeholder { color: var(--dim); }
+input[type=search]:focus { outline: none; border-color: var(--line-strong); box-shadow: 0 0 0 4px rgba(232, 201, 138, .1); }
+
+.notice { margin: 14px 0 0; padding: 10px 14px; border-radius: 12px; font-size: 14px; background: rgba(232, 201, 138, .08);
+  border: 1px solid var(--line-strong); color: var(--gold-hi); }
+.notice:empty { display: none; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 22px; margin-top: 22px; align-items: start; }
+.controls { display: grid; gap: 8px; margin-bottom: 12px; }
+.row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.lbl { color: var(--dim); font-size: 12px; width: 36px; flex-shrink: 0; }
+.chip { border-radius: 999px; padding: 2px 12px; font-size: 13px; color: var(--muted); }
+.chip.on { background: var(--gold-soft); border-color: var(--line-strong); color: var(--gold-hi); font-weight: 600; }
+.chip .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+.chip small { color: var(--dim); margin-left: 4px; }
+.stats { color: var(--dim); font-size: 12.5px; margin: 4px 0 10px; }
+
+/* 消息卡片 */
+.card { position: relative; padding: 14px 16px 12px 18px; margin-bottom: 10px; border-radius: 14px; background: var(--card);
+  border: 1px solid rgba(255, 255, 255, .06); transition: border-color .2s; }
+.card::before { content: ""; position: absolute; left: -1px; top: 14px; bottom: 14px; width: 3px; border-radius: 0 3px 3px 0; background: var(--sc); }
+.card:hover { border-color: color-mix(in srgb, var(--sc) 35%, transparent); }
+.head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); margin-bottom: 4px; }
+.src { font-weight: 600; color: var(--sc); display: inline-flex; align-items: center; gap: 6px; }
+.src::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--sc); box-shadow: 0 0 8px var(--sc); }
+.head .when { margin-left: auto; white-space: nowrap; }
+.thread { color: var(--dim); text-decoration: none; }
+.thread:hover { color: var(--ink); text-decoration: underline; }
+.card h2 { font-size: 16.5px; line-height: 1.55; margin: 2px 0; font-weight: 600; }
+.card h2 a { text-decoration: none; }
+.card h2 a:hover { color: var(--gold-hi); text-decoration: underline; text-underline-offset: 3px; }
+.orig { color: var(--dim); font-size: 13px; margin: 0 0 2px; }
+.text { margin: 4px 0; font-size: 14.5px; color: #cdd1e2; white-space: pre-line; overflow-wrap: anywhere; }
+.text.clamp { display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
+.more { border: 0; padding: 0; color: var(--gold); font-size: 13px; background: none; }
+.more:hover { background: none; text-decoration: underline; }
+.imgs { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 6px; margin: 8px 0 4px; }
+.imgs.one { grid-template-columns: minmax(0, 420px); }
+.imgs button { position: relative; padding: 0; border: 1px solid rgba(255, 255, 255, .08); border-radius: 10px; overflow: hidden;
+  aspect-ratio: 4 / 3; background: #0f1222; }
+.imgs.one button { aspect-ratio: auto; max-height: 420px; }
+.imgs img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.imgs.one img { object-fit: contain; max-height: 420px; }
+.imgs .plus { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(8, 10, 20, .6); font-size: 18px; font-weight: 600; }
+.foot { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+.tag { font-size: 12px; line-height: 1.9; padding: 0 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); text-decoration: none; }
+.tag.ver { color: var(--gold-hi); border-color: var(--line-strong); background: var(--gold-soft); }
+.tag.who { cursor: pointer; background: none; font: inherit; font-size: 12px; line-height: 1.9; }
+.tag.who::before { content: "爆料 · "; color: var(--dim); }
+.tag.link:hover, .tag.who:hover { color: var(--ink); border-color: var(--line-strong); }
+.open { margin-left: auto; font-size: 12.5px; color: var(--dim); text-decoration: none; white-space: nowrap; }
+.open:hover { color: var(--gold-hi); }
+.empty { text-align: center; color: var(--muted); padding: 60px 0; }
+.pager { display: block; margin: 14px auto; }
+
+/* 側欄 */
+aside { position: sticky; top: 74px; display: grid; gap: 14px; max-height: calc(100vh - 90px); overflow: auto; scrollbar-width: thin; }
+.panel { padding: 14px 16px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); }
+.panel h3 { margin: 0 0 8px; font: 700 15px/1.4 var(--serif); color: var(--gold-hi); letter-spacing: .04em; }
+.panel p.hint { margin: -4px 0 8px; font-size: 12px; color: var(--dim); }
+.rank { list-style: none; margin: 0; padding: 0; counter-reset: r; }
+.rank li { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 14px; counter-increment: r; }
+.rank li::before { content: counter(r); width: 20px; text-align: center; font-size: 12px; color: var(--dim); }
+.rank li:nth-child(-n+3)::before { color: var(--gold); font-weight: 700; }
+.rank button { border: 0; padding: 0; text-align: left; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank button:hover { background: none; color: var(--gold-hi); }
+.rank .n { color: var(--dim); font-size: 12px; }
+.rank a { color: var(--dim); text-decoration: none; font-size: 12px; }
+.rank a:hover { color: var(--gold-hi); }
+.threads, .manual { list-style: none; margin: 0; padding: 0; }
+.threads li, .manual li { padding: 7px 0; border-top: 1px solid rgba(255, 255, 255, .05); font-size: 13.5px; line-height: 1.5; }
+.threads li:first-child, .manual li:first-child { border-top: 0; padding-top: 0; }
+.threads a, .manual a { text-decoration: none; }
+.threads a:hover, .manual a:hover { color: var(--gold-hi); }
+.threads small, .manual small { display: block; color: var(--dim); font-size: 12px; }
+
+footer { color: var(--dim); font-size: 12.5px; padding: 26px 0 44px; border-top: 1px solid var(--line); margin-top: 26px; }
+footer table { border-collapse: collapse; margin-top: 6px; }
+footer td { padding: 2px 14px 2px 0; }
+.bad { color: #ff8a8a; }
+
+/* 看大圖 */
+.lb { position: fixed; inset: 0; z-index: 50; display: none; place-items: center; background: rgba(5, 6, 14, .92); }
+.lb.on { display: grid; }
+.lb img { max-width: 94vw; max-height: 86vh; border-radius: 8px; box-shadow: 0 20px 80px rgba(0, 0, 0, .8); }
+.lb .bar { position: fixed; left: 0; right: 0; bottom: 14px; display: flex; justify-content: center; gap: 8px; }
+.lb .bar button, .lb .bar a { background: rgba(20, 24, 44, .9); font-size: 14px; padding: 6px 14px; border: 1px solid var(--line); border-radius: 10px; text-decoration: none; }
+.lb .cnt { color: var(--muted); font-size: 13px; align-self: center; }
+
+@media (max-width: 960px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  aside { position: static; max-height: none; order: 2; }
+}
+@media (max-width: 600px) {
+  .nav { top: 6px; }
+  .brand span { display: none; }
+  .hero { padding: 32px 0 16px; }
+  .lbl { width: 100%; }
+  .card { padding: 12px 12px 10px 14px; }
+  .head .when { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="sky" aria-hidden="true"></div>
+<div class="wrap">
+  <nav class="nav">
+    <div class="brand">
+      <svg class="star" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3d2"/><stop offset="1" stop-color="#d4ac62"/></linearGradient></defs><path fill="url(#g)" d="M16 1.5l3.2 10.2L29.5 16l-10.3 4.3L16 30.5l-3.2-10.2L2.5 16l10.3-4.3z"/><circle cx="16" cy="16" r="3" fill="#0b0e1a"/></svg>
+      <span>原神內鬼情報站</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="seg" id="lang"><button data-v="zh">中文</button><button data-v="en">原文</button></div>
+    <button class="primary" id="refresh">↻ 立即更新</button>
+  </nav>
+</div>
+<main class="wrap">
+  <section class="hero">
+    <span class="eyebrow"><i></i>自動彙整 · 巴哈姆特 · Reddit · 官方 · 外媒</span>
+    <h1>原神內鬼情報站</h1>
+    <div class="meta" id="meta"></div>
+    <div class="warn">內鬼消息未經官方證實，可能變動或有誤，一切以官方公布為準。</div>
+  </section>
+  <div class="search">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input type="search" id="q" placeholder="搜尋角色名、版本、爆料者…（中英文皆可）" autocomplete="off">
+  </div>
+  <div class="notice" id="notice"></div>
+  <div class="layout">
+    <section>
+      <div class="controls">
+        <div class="row" id="f-source"><span class="lbl">來源</span></div>
+        <div class="row" id="f-ver"><span class="lbl">版本</span></div>
+        <div class="row" id="f-opt"><span class="lbl">篩選</span></div>
+      </div>
+      <div class="stats" id="stats"></div>
+      <div id="list"></div>
+    </section>
+    <aside>
+      <div class="panel">
+        <h3>爆料者排行</h3>
+        <p class="hint">近幾天被引用最多的來源。點名字篩選他的爆料，↗ 開啟原帳號或搜尋。</p>
+        <ol class="rank" id="rank"></ol>
+      </div>
+      <div class="panel">
+        <h3>巴哈姆特內鬼消息串</h3>
+        <ul class="threads" id="threads"></ul>
+      </div>
+      <div class="panel">
+        <h3>其他一手來源</h3>
+        <p class="hint">這些網站擋程式抓取，或需要登入，請直接點開看。</p>
+        <ul class="manual" id="manual"></ul>
+      </div>
+    </aside>
+  </div>
+  <footer id="foot"></footer>
+</main>
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="圖片">
+  <img id="lb-img" alt="">
+  <div class="bar"><button id="lb-prev">‹ 上一張</button><span class="cnt" id="lb-cnt"></span><button id="lb-next">下一張 ›</button><a id="lb-open" target="_blank" rel="noopener noreferrer">原圖 ↗</a><button id="lb-close">關閉</button></div>
+</div>
+<script>
+const DATA = /*__DATA__*/null;
+const CFG = /*__CFG__*/{};
+const SRC = CFG.sources || {};
+// 本機伺服器才能直接更新；雲端版改成連到 GitHub Actions 手動執行頁
+const LIVE = ["127.0.0.1", "localhost"].includes(location.hostname);
+const PAGE = 40;
+
+function load(k, d) { try { return localStorage.getItem("gleaks." + k) || d; } catch (e) { return d; } }
+function save(k, v) { try { localStorage.setItem("gleaks." + k, v); } catch (e) {} }
+
+const state = { lang: load("lang", "zh"), source: load("source", "all"), ver: "all", imgOnly: load("img", "0") === "1",
+                leaker: "", q: "", shown: PAGE };
+
+function el(tag, attrs, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "class") n.className = v; else if (k === "style") n.style.cssText = v;
+    else if (k.startsWith("on")) n[k] = v; else n.setAttribute(k, v);
+  }
+  for (const c of kids) if (c != null && c !== false) n.append(c);
+  return n;
+}
+const safe = u => /^https?:\/\//i.test(u || "") ? u : "#";
+const ext = (href, ...kids) => el("a", { href: safe(href), target: "_blank", rel: "noopener noreferrer" }, ...kids);
+function ago(iso) {
+  const m = (Date.now() - new Date(iso)) / 60000;
+  if (m < 60) return Math.max(1, Math.round(m)) + " 分鐘前";
+  if (m < 1440) return Math.round(m / 60) + " 小時前";
+  return Math.round(m / 1440) + " 天前";
+}
+const fmt = iso => new Date(iso).toLocaleString("zh-TW", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
+const zh = () => state.lang === "zh";
+const T = it => zh() && it.title_zh ? it.title_zh : it.title;
+const X = it => zh() && it.text_zh ? it.text_zh : it.text;
+
+function chips(id, opts, cur, pick) {
+  const row = document.getElementById(id);
+  row.querySelectorAll("button").forEach(b => b.remove());
+  for (const [v, label, color, n] of opts) {
+    const dot = color ? el("span", { class: "dot", style: `background:${color}` }) : null;
+    row.append(el("button", { class: "chip" + (cur === v ? " on" : ""), onclick: () => pick(v) }, dot, label, n != null ? el("small", {}, n) : null));
+  }
+}
+function drawControls() {
+  const items = DATA ? DATA.items : [];
+  const count = s => items.filter(i => i.source === s).length;
+  chips("f-source", [["all", "全部", null, items.length], ...Object.entries(SRC).map(([k, v]) => [k, v, `var(--s-${k})`, count(k)])],
+    state.source, v => { state.source = v; save("source", v); reset(); });
+  const vc = {};
+  items.forEach(i => i.versions.forEach(v => vc[v] = (vc[v] || 0) + 1));
+  const vers = Object.keys(vc).filter(v => vc[v] >= 2).sort((a, b) => parseFloat(b) - parseFloat(a)).slice(0, 8);
+  chips("f-ver", [["all", "全部版本"], ...vers.map(v => [v, v + " 版", null, vc[v]])], state.ver, v => { state.ver = v; reset(); });
+  const opt = [["img", state.imgOnly ? "✓ 只看有圖" : "只看有圖"]];
+  if (state.leaker) opt.push(["leaker", `爆料者：${state.leaker} ✕`]);
+  chips("f-opt", opt, state.imgOnly ? "img" : "", v => {
+    if (v === "img") { state.imgOnly = !state.imgOnly; save("img", state.imgOnly ? "1" : "0"); } else state.leaker = "";
+    reset();
+  });
+  if (state.leaker) document.querySelector("#f-opt button:last-child").classList.add("on");
+  document.querySelectorAll("#lang button").forEach(b => b.classList.toggle("on", b.dataset.v === state.lang));
+}
+function reset() { state.shown = PAGE; drawControls(); draw(); }
+
+function match(it) {
+  if (state.source !== "all" && it.source !== state.source) return false;
+  if (state.ver !== "all" && !it.versions.includes(state.ver)) return false;
+  if (state.imgOnly && !it.images.length) return false;
+  if (state.leaker && !it.leakers.some(n => n.toLowerCase() === state.leaker.toLowerCase())) return false;
+  if (state.q) {
+    const q = state.q.toLowerCase();
+    return [it.title, it.title_zh, it.text, it.text_zh, it.author, it.thread, ...it.leakers].some(s => s && s.toLowerCase().includes(q));
+  }
+  return true;
+}
+
+function images(it) {
+  if (!it.images.length) return null;
+  const imgs = it.images, max = 4;
+  const box = el("div", { class: "imgs" + (imgs.length === 1 ? " one" : "") });
+  imgs.slice(0, max).forEach((im, i) => {
+    const b = el("button", { "aria-label": "看大圖", onclick: () => openLb(imgs, i) },
+      el("img", { src: safe(im.thumb), loading: "lazy", referrerpolicy: "no-referrer", alt: "" }));
+    if (i === max - 1 && imgs.length > max) b.append(el("span", { class: "plus" }, "+" + (imgs.length - max)));
+    box.append(b);
+  });
+  return box;
+}
+
+function card(it) {
+  const head = el("div", { class: "head" }, el("span", { class: "src" }, SRC[it.source] || it.source));
+  if (it.source === "baha") head.append(ext(it.thread_link, `${it.thread} · ${it.floor} 樓`), `· ${it.author}`);
+  else if (it.author) head.append(it.source === "reddit" ? `u/${it.author}` : it.author);
+  const th = head.querySelector("a"); if (th) th.className = "thread";
+  head.append(el("span", { class: "when", title: fmt(it.date) }, ago(it.date)));
+
+  const title = it.title ? el("h2", {}, ext(it.link, T(it))) : null;
+  const orig = it.title && zh() && it.title_zh ? el("p", { class: "orig" }, it.title) : null;
+  let text = null, more = null;
+  const body = X(it);
+  if (body) {
+    text = el("p", { class: "text" }, body);
+    if (body.split("\n").length > 6 || body.length > 260) {
+      text.classList.add("clamp");
+      more = el("button", { class: "more", onclick: () => { text.classList.remove("clamp"); more.remove(); } }, "展開全文");
+    }
+  }
+  const foot = el("div", { class: "foot" },
+    ...it.versions.slice(0, 3).map(v => el("span", { class: "tag ver" }, v)),
+    ...it.leakers.map(n => el("button", { class: "tag who", onclick: () => { state.leaker = n; reset(); scrollTo({ top: 0 }); } }, n)),
+    ...it.links.map(l => { const a = ext(l.url, l.label + " ↗"); a.className = "tag link"; return a; }),
+    (() => { const a = ext(it.link, it.source === "baha" ? "巴哈原樓 ↗" : "原文 ↗"); a.className = "open"; return a; })());
+  return el("article", { class: "card", style: `--sc:var(--s-${it.source})` }, head, title, orig, text, more, images(it), foot);
+}
+
+function draw() {
+  const list = document.getElementById("list");
+  list.replaceChildren();
+  if (!DATA) {
+    list.append(el("div", { class: "empty" }, LIVE ? "第一次使用，正在抓取消息…（約 30 秒到 1 分鐘）" : "尚無資料。"));
+    return;
+  }
+  const rows = DATA.items.filter(match);
+  document.getElementById("stats").textContent = `共 ${rows.length} 則消息` + (rows.length > state.shown ? `，先顯示最新 ${state.shown} 則` : "");
+  if (!rows.length) list.append(el("div", { class: "empty" }, "沒有符合條件的消息"));
+  const frag = document.createDocumentFragment();
+  rows.slice(0, state.shown).forEach(it => frag.append(card(it)));
+  list.append(frag);
+  if (rows.length > state.shown) {
+    list.append(el("button", { class: "pager", onclick: () => { state.shown += PAGE; draw(); } }, `再載入 ${Math.min(PAGE, rows.length - state.shown)} 則`));
+  }
+}
+
+function drawSide() {
+  if (!DATA) return;
+  const rank = document.getElementById("rank");
+  rank.replaceChildren(...DATA.leakers.map(l => el("li", {},
+    el("button", { onclick: () => { state.leaker = l.name; reset(); scrollTo({ top: 0 }); } }, l.name),
+    el("span", { class: "n" }, `${l.count} 則`), ext(l.url, "↗"))));
+  if (!DATA.leakers.length) rank.append(el("li", {}, "目前沒有資料"));
+  document.getElementById("threads").replaceChildren(...DATA.threads.slice(0, 8).map(t => el("li", {},
+    ext(t.link, t.title), el("small", {}, `推 ${t.gp} · 人氣 ${t.views.toLocaleString()}` + (t.last ? ` · 最新回覆 ${ago(t.last)}` : "")))));
+  document.getElementById("manual").replaceChildren(...DATA.manual.map(m => el("li", {}, ext(m.url, m.name + " ↗"), el("small", {}, m.desc))));
+}
+
+function drawMeta() {
+  const meta = document.getElementById("meta");
+  if (!DATA) { meta.textContent = "尚未更新"; return; }
+  meta.textContent = `近 ${DATA.days} 天 · 最後更新 ${fmt(DATA.generated)}（${ago(DATA.generated)}）`;
+  const bad = DATA.sources.filter(s => s.error);
+  document.getElementById("foot").replaceChildren(
+    el("div", {}, `這次更新：${DATA.sources.length - bad.length}/${DATA.sources.length} 個來源正常。某個來源暫時抓不到時，會保留它先前的消息。英文用 Google 翻譯免費服務轉成中文，不消耗 AI token。`),
+    el("table", {}, ...DATA.sources.map(s => el("tr", {}, el("td", {}, s.name),
+      el("td", { class: s.error ? "bad" : "" }, s.error ? "這次抓取失敗" : `抓到 ${s.count} 則`)))));
+}
+
+/* 看大圖 */
+const lb = { list: [], i: 0 };
+function showLb() {
+  const im = lb.list[lb.i];
+  document.getElementById("lb-img").src = safe(im.full);
+  document.getElementById("lb-open").href = safe(im.full);
+  document.getElementById("lb-cnt").textContent = `${lb.i + 1} / ${lb.list.length}`;
+  const multi = lb.list.length > 1;
+  document.getElementById("lb-prev").style.display = document.getElementById("lb-next").style.display = multi ? "" : "none";
+}
+function openLb(list, i) { lb.list = list; lb.i = i; showLb(); document.getElementById("lb").classList.add("on"); document.getElementById("lb-close").focus(); }
+function closeLb() { document.getElementById("lb").classList.remove("on"); document.getElementById("lb-img").src = ""; }
+const step = d => { lb.i = (lb.i + d + lb.list.length) % lb.list.length; showLb(); };
+document.getElementById("lb-prev").onclick = e => { e.stopPropagation(); step(-1); };
+document.getElementById("lb-next").onclick = e => { e.stopPropagation(); step(1); };
+document.getElementById("lb-close").onclick = closeLb;
+document.getElementById("lb-open").onclick = e => e.stopPropagation();
+document.getElementById("lb").onclick = e => { if (e.target.id === "lb" || e.target.id === "lb-img") closeLb(); };
+document.addEventListener("keydown", e => {
+  if (!document.getElementById("lb").classList.contains("on")) return;
+  if (e.key === "Escape") closeLb(); else if (e.key === "ArrowLeft") step(-1); else if (e.key === "ArrowRight") step(1);
+});
+
+async function refresh() {
+  const btn = document.getElementById("refresh");
+  const notice = document.getElementById("notice");
+  if (!LIVE && CFG.runUrl) {
+    window.open(CFG.runUrl, "_blank", "noopener");
+    notice.textContent = "已開啟 GitHub：請按右側「Run workflow」→ 綠色「Run workflow」，約 1–2 分鐘後重新整理本頁即可看到新資料。";
+    return;
+  }
+  if (!LIVE) { notice.textContent = "這是離線檔案，無法更新。請用桌面上的「原神內鬼情報站」捷徑開啟。"; return; }
+  btn.disabled = true; btn.textContent = "更新中…";
+  notice.textContent = "正在抓取巴哈姆特、Reddit、官方與外媒並翻譯，通常 20–60 秒。";
+  try {
+    const r = await fetch("/refresh", { method: "POST", headers: { "X-Leaks": "1" } });
+    if (!r.ok) throw new Error(r.status);
+    location.reload();
+  } catch (e) {
+    btn.disabled = false; btn.textContent = "↻ 立即更新";
+    notice.textContent = "更新失敗：看板程式可能已關閉，請重新點桌面上的「原神內鬼情報站」捷徑。";
+  }
+}
+
+document.getElementById("refresh").onclick = refresh;
+document.querySelectorAll("#lang button").forEach(b => b.onclick = () => { state.lang = b.dataset.v; save("lang", state.lang); drawControls(); draw(); });
+let qt;
+document.getElementById("q").oninput = e => { clearTimeout(qt); qt = setTimeout(() => { state.q = e.target.value.trim(); state.shown = PAGE; draw(); }, 150); };
+drawControls(); drawMeta(); drawSide(); draw();
+if (LIVE && (!DATA || Date.now() - new Date(DATA.generated) > CFG.staleHours * 3600000)) refresh();
+</script>
+</body>
+</html>

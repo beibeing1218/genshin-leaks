@@ -1,0 +1,7 @@
+genshin-leaks.html
+site/
+data/log.txt
+data/leaks.local.json
+data/translations.local.json
+*.tmp
+__pycache__/
