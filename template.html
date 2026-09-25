@@ -15,6 +15,8 @@
   --bg: #0b0e1a; --bg2: #121629; --ink: #eef0f7; --muted: #9aa0b8; --dim: #646a85;
   --line: rgba(232, 201, 138, .12); --line-strong: rgba(232, 201, 138, .32);
   --card: rgba(24, 28, 50, .72); --glass: rgba(16, 19, 36, .78);
+  /* 導覽列與篩選列：比卡片亮一階的靛藍底＋金色描邊，才不會和頁面內容混在一起 */
+  --bar-bg: linear-gradient(180deg, #2d3260, #1f2347); --bar-line: rgba(232, 201, 138, .5);
   --gold: #e8c98a; --gold-hi: #f6e3b4; --gold-soft: rgba(232, 201, 138, .12);
   /* 各來源識別色 */
   --s-baha: #4cc3ff; --s-reddit: #ff7a45; --s-hoyolab: #e8c98a; --s-media: #b79cff;
@@ -44,8 +46,8 @@ a { color: inherit; }
 /* 導覽列：黏住的是外層容器（nav 本身的父層太短，黏不住） */
 .navwrap { position: sticky; top: 0; z-index: 20; padding-top: 10px; }
 .nav { display: flex; align-items: center; gap: 10px;
-  padding: 8px 10px 8px 14px; background: var(--glass); border: 1px solid var(--line); border-radius: 14px;
-  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 12px 40px -16px rgba(0, 0, 0, .8); }
+  padding: 8px 10px 8px 14px; background: var(--bar-bg); border: 1px solid var(--bar-line); border-radius: 14px;
+  box-shadow: 0 14px 36px -12px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .08); }
 .brand { display: flex; align-items: center; gap: 10px; font: 700 16px/1 var(--serif); color: var(--gold-hi); letter-spacing: .04em; }
 .star { width: 28px; height: 28px; flex-shrink: 0; }
 .spacer { flex: 1; }
@@ -81,15 +83,17 @@ input[type=search]:focus { outline: none; border-color: var(--line-strong); box-
 .notice:empty { display: none; }
 
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 22px; margin-top: 22px; align-items: start; }
-/* 篩選列：往下滑時固定在導覽列下方（--stick 由 JS 依導覽列高度設定） */
-.controls { position: sticky; top: var(--stick, 70px); z-index: 15; display: grid; gap: 8px; margin: 0 -8px 12px; padding: 8px;
-  border: 1px solid transparent; border-radius: 12px; transition: background .2s, border-color .2s, box-shadow .2s; }
-.controls.stuck { background: rgba(14, 17, 33, .95); border-color: var(--line); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
-  box-shadow: 0 12px 30px -14px rgba(0, 0, 0, .8); }
+/* 篩選列：固定在畫面下方，像 App 的底部選單（內容底部留出的空間 --barh 由 JS 量） */
+.controls { position: fixed; z-index: 15; left: 50%; bottom: 12px; transform: translateX(-50%); width: min(1148px, calc(100% - 32px));
+  display: grid; gap: 8px; padding: 10px 14px; border-radius: 16px; background: var(--bar-bg); border: 1px solid var(--bar-line);
+  box-shadow: 0 -8px 36px -10px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .08); }
+main.wrap { padding-bottom: calc(var(--barh, 120px) + 24px); }
 .row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-.lbl { color: var(--dim); font-size: 12px; width: 36px; flex-shrink: 0; }
-.chip { border-radius: 999px; padding: 2px 12px; font-size: 13px; color: var(--muted); }
-.chip.on { background: var(--gold-soft); border-color: var(--line-strong); color: var(--gold-hi); font-weight: 600; }
+.lbl { color: #a9aecb; font-size: 12.5px; width: 36px; flex-shrink: 0; }
+.chip { border-radius: 999px; padding: 2px 12px; font-size: 13px; color: #cfd3e6; border-color: rgba(255, 255, 255, .16); background: rgba(8, 10, 24, .35); }
+.chip:hover { border-color: var(--bar-line); background: rgba(232, 201, 138, .08); }
+.chip.on { background: linear-gradient(180deg, #f3dca6, #d9b36c); border-color: #f0d69d; color: #2a1f08; font-weight: 600; }
+.chip.on small { color: rgba(42, 31, 8, .6); }
 .chip .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
 .chip small { color: var(--dim); margin-left: 4px; }
 .stats { color: var(--dim); font-size: 12.5px; margin: 4px 0 10px; }
@@ -133,7 +137,7 @@ input[type=search]:focus { outline: none; border-color: var(--line-strong); box-
 .pager { display: block; margin: 14px auto; }
 
 /* 側欄 */
-aside { position: sticky; top: 74px; display: grid; gap: 14px; max-height: calc(100vh - 90px); overflow: auto; scrollbar-width: thin; }
+aside { position: sticky; top: 74px; display: grid; gap: 14px; max-height: calc(100vh - 74px - var(--barh, 120px) - 30px); overflow: auto; scrollbar-width: thin; }
 .panel { padding: 14px 16px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); }
 .panel h3 { margin: 0 0 8px; font: 700 15px/1.4 var(--serif); color: var(--gold-hi); letter-spacing: .04em; }
 .panel p.hint { margin: -4px 0 8px; font-size: 12px; color: var(--dim); }
@@ -175,18 +179,31 @@ footer td { padding: 2px 14px 2px 0; }
   .navwrap { position: static; padding-top: 6px; }
   .brand span { display: none; }
   .hero { padding: 32px 0 16px; }
-  /* 手機：篩選列像 App 的底部選單一樣固定在最下面；每列一行、可左右滑，才不會佔掉半個螢幕 */
-  .controls { position: fixed; left: 0; right: 0; bottom: 0; top: auto; margin: 0; gap: 6px;
-    padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0;
-    background: rgba(14, 17, 33, .96); border: 1px solid var(--line); border-bottom: 0;
-    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 -12px 30px -14px rgba(0, 0, 0, .9); }
-  main.wrap { padding-bottom: calc(var(--barh, 120px) + 8px); }
+  /* 手機：篩選列貼齊畫面最下緣；每列一行、可左右滑，才不會佔掉半個螢幕 */
+  .controls { left: 0; bottom: 0; transform: none; width: 100%; gap: 7px;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); border-radius: 18px 18px 0 0; border-bottom: 0; }
+  main.wrap { padding-bottom: calc(var(--barh, 130px) + 10px); }
   .row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); padding-right: 24px; }
   .row::-webkit-scrollbar { display: none; }
-  .lbl { width: auto; margin-right: 2px; }
-  .chip { flex-shrink: 0; white-space: nowrap; }
-  .card { padding: 12px 12px 10px 14px; }
+  .lbl { width: auto; margin-right: 2px; font-size: 13.5px; }
+  .chip { flex-shrink: 0; white-space: nowrap; font-size: 15px; padding: 4px 13px; }
+  /* 手機字級放大一級 */
+  body { font-size: 16px; }
+  .meta { font-size: 14px; } .warn { font-size: 13.5px; }
+  .stats { font-size: 14px; }
+  .card { padding: 14px 13px 12px 15px; }
+  .head { font-size: 14px; }
   .head .when { margin-left: 0; }
+  .card h2 { font-size: 18.5px; }
+  .orig { font-size: 14.5px; }
+  .text { font-size: 16.5px; line-height: 1.75; }
+  .more { font-size: 15px; }
+  .tag, .tag.who { font-size: 13.5px; line-height: 2; }
+  .open { font-size: 14px; }
+  .panel h3 { font-size: 17px; }
+  .panel p.hint, .threads small, .manual small, .rank .n, .rank a { font-size: 13.5px; }
+  .rank li, .threads li, .manual li { font-size: 15.5px; }
+  footer { font-size: 13.5px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -312,31 +329,19 @@ function drawControls() {
   document.querySelectorAll("#lang button").forEach(b => b.classList.toggle("on", b.dataset.v === state.lang));
 }
 function reset() {
-  state.shown = PAGE; drawControls(); draw();
-  // 在固定的篩選列上切換條件時，捲回清單開頭，才看得到新結果的第一則
-  const bar = document.querySelector(".controls"), stats = document.getElementById("stats");
-  const line = docked() ? 0 : bar.getBoundingClientRect().bottom;   // 手機篩選列在下方，清單從畫面頂端開始
-  if ((docked() || bar.classList.contains("stuck")) && stats.getBoundingClientRect().top < line)
+  state.shown = PAGE; drawControls(); draw(); layoutSticky();
+  // 已經往下滑時切換條件，捲回清單開頭（電腦版要扣掉固定在上方的導覽列），才看得到新結果的第一則
+  const wrap = document.querySelector(".navwrap"), stats = document.getElementById("stats");
+  const line = getComputedStyle(wrap).position === "sticky" ? wrap.getBoundingClientRect().bottom : 0;
+  if (stats.getBoundingClientRect().top < line)
     scrollTo({ top: scrollY + stats.getBoundingClientRect().top - line - 8 });
 }
-const docked = () => getComputedStyle(document.querySelector(".controls")).position === "fixed";
 
-// 電腦：篩選列固定在導覽列下方，固定住時加上毛玻璃底色；手機：固定在畫面最下方，內容底部留出同高的空間
+// 篩選列固定在下方，量它的高度讓內容底部留出同樣的空間，最後幾則才不會被擋住
 function layoutSticky() {
-  const wrap = document.querySelector(".navwrap");
-  const stick = getComputedStyle(wrap).position === "sticky" ? wrap.getBoundingClientRect().height + 6 : 0;
-  document.documentElement.style.setProperty("--stick", Math.round(stick) + "px");
   document.documentElement.style.setProperty("--barh", Math.round(document.querySelector(".controls").getBoundingClientRect().height) + "px");
 }
-function markStuck() {
-  const bar = document.querySelector(".controls");
-  if (docked()) return bar.classList.remove("stuck");
-  const top = parseFloat(getComputedStyle(bar).top);
-  bar.classList.toggle("stuck", bar.getBoundingClientRect().top <= top + 0.5 && scrollY > 0);
-}
-addEventListener("resize", () => { layoutSticky(); markStuck(); });
-addEventListener("scroll", markStuck, { passive: true });
-layoutSticky();
+addEventListener("resize", layoutSticky);
 
 function match(it) {
   if (state.source !== "all" && it.source !== state.source) return false;
